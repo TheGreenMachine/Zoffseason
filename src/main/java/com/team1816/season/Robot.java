@@ -21,7 +21,6 @@ import com.team1816.season.controlboard.ActionManager;
 import com.team1816.season.states.RobotState;
 import com.team254.lib.util.LatchedBoolean;
 import com.team254.lib.util.SwerveDriveSignal;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,7 +62,6 @@ public class Robot extends TimedRobot {
     private boolean faulted = false;
 
     // private PowerDistributionPanel pdp = new PowerDistributionPanel();
-
 
     Robot() {
         super();
@@ -150,15 +148,12 @@ public class Robot extends TimedRobot {
                     );
 
                     mDrive.CreateBadLogValue("Drivetrain PID", mDrive.pidToString());
-
                 }
             }
 
             logger.finishInitialization();
 
-            mSubsystemManager.setSubsystems(
-                mDrive
-            );
+            mSubsystemManager.setSubsystems(mDrive);
 
             mSubsystemManager.zeroSensors();
 
@@ -171,8 +166,7 @@ public class Robot extends TimedRobot {
             mAutoModeSelector.updateModeCreator();
 
             //
-            actionManager =
-                new ActionManager();
+            actionManager = new ActionManager();
         } catch (Throwable t) {
             faulted = true;
             throw t;

@@ -5,7 +5,6 @@ import com.team1816.season.Constants;
 import com.team1816.season.subsystems.*;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -21,7 +20,6 @@ public class RobotState {
 
     // Superstructure ACTUAL states
     public Point visionPoint = new Point();
-
 
     public RobotState() {
         SmartDashboard.putData("Field", field);

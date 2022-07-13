@@ -10,7 +10,6 @@ import com.team1816.lib.hardware.components.IPigeonIMU;
 import com.team1816.lib.loops.ILooper;
 import com.team1816.lib.loops.Loop;
 import com.team1816.season.Constants;
-import com.team1816.season.subsystems.LedManager;
 import com.team254.lib.util.DriveSignal;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,8 +33,6 @@ public abstract class Drive
     public static final String NAME = "drivetrain";
 
     // Components
-    @Inject
-    protected static LedManager ledManager;
 
     @Inject
     protected static Infrastructure mInfrastructure;
