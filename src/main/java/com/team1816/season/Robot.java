@@ -19,8 +19,6 @@ import com.team1816.season.auto.AutoModeSelector;
 import com.team1816.season.auto.paths.TrajectorySet;
 import com.team1816.season.controlboard.ActionManager;
 import com.team1816.season.states.RobotState;
-import com.team1816.season.states.Superstructure;
-import com.team1816.season.subsystems.*;
 import com.team254.lib.util.LatchedBoolean;
 import com.team254.lib.util.SwerveDriveSignal;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -62,6 +60,8 @@ public class Robot extends TimedRobot {
 
     private ActionManager actionManager;
 
+    private boolean faulted = false;
+
     // private PowerDistributionPanel pdp = new PowerDistributionPanel();
 
 
@@ -71,6 +71,9 @@ public class Robot extends TimedRobot {
         injector = Guice.createInjector(new LibModule(), new SeasonModule());
         mDrive = (injector.getInstance(Drive.Factory.class)).getInstance();
         mRobotState = injector.getInstance(RobotState.class);
+        mSubsystemManager = injector.getInstance(SubsystemManager.class);
+        mAutoModeExecutor = injector.getInstance(AutoModeExecutor.class);
+        mAutoModeSelector = injector.getInstance(AutoModeSelector.class);
         mInfrastructure = injector.getInstance(Infrastructure.class);
         trajectorySet = injector.getInstance(TrajectorySet.class);
     }
@@ -154,7 +157,7 @@ public class Robot extends TimedRobot {
             logger.finishInitialization();
 
             mSubsystemManager.setSubsystems(
-                mDrive,
+                mDrive
             );
 
             mSubsystemManager.zeroSensors();
@@ -300,21 +303,6 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         loopStart = Timer.getFPGATimestamp();
-
-        // Debugging functionality to stop autos mid-path - Currently not in use
-        boolean signalToResume = !mControlBoard.getUnlockClimber();
-        boolean signalToStop = mControlBoard.getUnlockClimber();
-        if (mAutoModeExecutor.isInterrupted()) {
-            manualControl();
-
-            if (mWantsAutoExecution.update(signalToResume)) {
-                mAutoModeExecutor.resume();
-            }
-        }
-        if (mWantsAutoInterrupt.update(signalToStop)) {
-            mAutoModeExecutor.interrupt();
-        }
-
         if (Constants.kIsLoggingAutonomous) {
             logger.updateTopics();
             logger.log();
