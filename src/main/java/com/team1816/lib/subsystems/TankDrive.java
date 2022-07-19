@@ -12,7 +12,6 @@ import com.team1816.lib.math.DriveConversions;
 import com.team1816.lib.util.EnhancedMotorChecker;
 import com.team1816.season.Constants;
 import com.team1816.season.auto.AutoModeSelector;
-import com.team1816.season.subsystems.LedManager;
 import com.team254.lib.util.CheesyDriveHelper;
 import com.team254.lib.util.DriveSignal;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -229,11 +228,6 @@ public class TankDrive extends Drive implements DifferentialDrivetrain {
         boolean checkPigeon = mPigeon == null;
 
         System.out.println(leftSide && rightSide && checkPigeon);
-        if (leftSide && rightSide && checkPigeon) {
-            ledManager.indicateStatus(LedManager.RobotStatus.ENABLED);
-        } else {
-            ledManager.indicateStatus(LedManager.RobotStatus.ERROR);
-        }
         return leftSide && rightSide;
     }
 

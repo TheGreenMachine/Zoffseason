@@ -13,7 +13,6 @@ import com.team1816.season.auto.actions.*;
 import com.team1816.season.controlboard.ControlBoard;
 import com.team1816.season.controlboard.GamepadDriveControlBoard;
 import com.team1816.season.controlboard.GamepadOperatorControlBoard;
-import com.team1816.season.subsystems.*;
 
 public class SeasonModule extends AbstractModule {
 

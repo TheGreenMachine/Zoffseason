@@ -140,30 +140,12 @@ public class AutoModeSelector {
             // 2020
             case DRIVE_STRAIGHT:
                 return (Optional.of(new DriveStraightMode()));
-            case DRIVE_STRAIGHT_SHOOT:
-                return Optional.of(new DriveStraightShootMode());
             case DO_NOTHING:
                 return Optional.of(new DoNothingMode());
             case TUNE_DRIVETRAIN:
                 return Optional.of(new TuneDrivetrainMode());
             case LIVING_ROOM:
                 return (Optional.of(new LivingRoomMode()));
-            case TWO_BALL_A:
-                return (Optional.of(new TwoBallModeA()));
-            case TWO_BALL_B:
-                return (Optional.of(new TwoBallModeB()));
-            case FOUR_BALL_B:
-                return (Optional.of(new FourBallModeB()));
-            case TWO_BALL_C:
-                return (Optional.of(new TwoBallModeC()));
-            case FOUR_BALL_C:
-                return (Optional.of(new FourBallModeC()));
-            case FIVE_BALL:
-                return (Optional.of(new FiveBallMode()));
-            case ONE_BALL_A_B:
-                return (Optional.of(new OneBallA_BMode()));
-            case ONE_BALL_C_BORDER:
-                return (Optional.of(new OnceBallC_BorderMode()));
             default:
                 break;
         }

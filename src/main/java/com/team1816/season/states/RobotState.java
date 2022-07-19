@@ -2,7 +2,6 @@ package com.team1816.season.states;
 
 import com.google.inject.Singleton;
 import com.team1816.season.Constants;
-import com.team1816.season.subsystems.*;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -34,7 +33,6 @@ public class RobotState {
         Rotation2d initial_vehicle_to_turret
     ) {
         reset(initial_field_to_vehicle);
-        vehicle_to_turret = initial_vehicle_to_turret;
     }
 
     public synchronized void reset(Pose2d initial_field_to_vehicle) {
@@ -50,14 +48,9 @@ public class RobotState {
         return field_to_vehicle;
     }
 
-    public Rotation2d getLatestFieldToTurret() {
-        return field_to_vehicle.getRotation().plus(vehicle_to_turret);
-    }
-
     public synchronized void outputToSmartDashboard() {
         //shuffleboard periodic updates should be here
         field.setRobotPose(field_to_vehicle);
-        field.getObject(Turret.NAME).setPose(getFieldToTurretPos());
     }
 
     // Camera state

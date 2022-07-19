@@ -25,6 +25,7 @@ public class Constants {
     public static final int kLongCANTimeoutMs = 100; // use for constructors
 
     // Field characterization
+    public static final double fieldCenterY = 4.23;
 
     // Drivetrain characterization
     public static final double kDriveWheelTrackWidthInches = factory.getConstant(
@@ -59,8 +60,8 @@ public class Constants {
     );
     public static double kTrackScrubFactor = factory.getConstant("kTrackScrubFactor");
 
-    public static final Pose2d ZeroPose = new Pose2d(0.5, fieldCenterY, EmptyRotation);
-    public static Pose2d StartingPose = new Pose2d(0.5, fieldCenterY, EmptyRotation);
+    public static final Pose2d ZeroPose = new Pose2d(0.5, 4.23, EmptyRotation);
+    public static Pose2d StartingPose = new Pose2d(0.5, 4.23, EmptyRotation);
 
     public static class Tank {
 
