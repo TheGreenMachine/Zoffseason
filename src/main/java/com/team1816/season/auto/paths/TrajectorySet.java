@@ -56,43 +56,7 @@ public class TrajectorySet {
         TUNE_DRIVETRAIN = new DriveStraight(120, 40).generateTrajectory();
         LIVING_ROOM = new LivingRoomPath().generateTrajectory();
 
-        TWO_BALL_A = new TwoBallAutoA().generateTrajectory();
-
-        TWO_BALL_B = new TwoBallAutoB().generateTrajectory();
-        FOUR_BALL_B2 = new FourBallAutoB2().generateTrajectory();
-        FOUR_BALL_B3 = new FourBallAutoB3().generateTrajectory();
-
-        TWO_BALL_C = new TwoBallAutoC().generateTrajectory();
-        FOUR_BALL_C2 = new FourBallAutoC2().generateTrajectory();
-        FOUR_BALL_C3 = new FourBallAutoC3().generateTrajectory();
-
-        FIVE_BALL_A = new FiveBallAutoA().generateTrajectory();
-        FIVE_BALL_B = new FiveBallAutoB().generateTrajectory();
-        FIVE_BALL_C = new FiveBallAutoC().generateTrajectory();
-        FIVE_BALL_D = new FiveBallAutoD().generateTrajectory();
-
-        ONE_BALL_A_B = new OneBallA_B().generateTrajectory();
-        ONE_BALL_C_BORDER = new OneBallAutoC_Border().generateTrajectory();
-
         // Heading lists
         LIVING_ROOM_HEADINGS = new LivingRoomPath().generateHeadings();
-
-        TWO_BALL_A_HEADINGS = new TwoBallAutoA().generateHeadings();
-
-        TWO_BALL_B_HEADINGS = new TwoBallAutoB().generateHeadings();
-        FOUR_BALL_B2_HEADINGS = new FourBallAutoB2().generateHeadings();
-        FOUR_BALL_B3_HEADINGS = new FourBallAutoB3().generateHeadings();
-
-        TWO_BALL_C_HEADINGS = new TwoBallAutoC().generateHeadings();
-        FOUR_BALL_C2_HEADINGS = new FourBallAutoC2().generateHeadings();
-        FOUR_BALL_C3_HEADINGS = new FourBallAutoC3().generateHeadings();
-
-        FIVE_BALL_A_HEADINGS = new FiveBallAutoA().generateHeadings();
-        FIVE_BALL_B_HEADINGS = new FiveBallAutoB().generateHeadings();
-        FIVE_BALL_C_HEADINGS = new FiveBallAutoC().generateHeadings();
-        FIVE_BALL_D_HEADINGS = new FiveBallAutoD().generateHeadings();
-
-        ONE_BALL_A_B_HEADINGS = new OneBallA_B().generateHeadings();
-        ONE_BALL_C_BORDER_HEADINGS = new OneBallAutoC_Border().generateHeadings();
     }
 }
