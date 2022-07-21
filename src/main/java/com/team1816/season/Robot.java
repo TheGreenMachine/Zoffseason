@@ -19,6 +19,7 @@ import com.team1816.season.auto.AutoModeSelector;
 import com.team1816.season.auto.paths.TrajectorySet;
 import com.team1816.season.controlboard.ActionManager;
 import com.team1816.season.states.RobotState;
+import com.team1816.season.subsystems.Elevator;
 import com.team254.lib.util.LatchedBoolean;
 import com.team254.lib.util.SwerveDriveSignal;
 import edu.wpi.first.wpilibj.*;
@@ -48,6 +49,8 @@ public class Robot extends TimedRobot {
     // subsystems
     private final Drive mDrive;
 
+    private final Elevator mElevator;
+
     private final LatchedBoolean mWantsAutoExecution = new LatchedBoolean();
     private final LatchedBoolean mWantsAutoInterrupt = new LatchedBoolean();
 
@@ -68,6 +71,7 @@ public class Robot extends TimedRobot {
         // initialize injector
         injector = Guice.createInjector(new LibModule(), new SeasonModule());
         mDrive = (injector.getInstance(Drive.Factory.class)).getInstance();
+        mElevator = injector.getInstance(Elevator.class);
         mRobotState = injector.getInstance(RobotState.class);
         mSubsystemManager = injector.getInstance(SubsystemManager.class);
         mAutoModeExecutor = injector.getInstance(AutoModeExecutor.class);
@@ -166,7 +170,12 @@ public class Robot extends TimedRobot {
             mAutoModeSelector.updateModeCreator();
 
             //
-            actionManager = new ActionManager();
+            actionManager = new ActionManager(
+                createAction(
+                    mControlBoard::getZeroPose, () -> {
+                    mElevator.dropFrisbee();
+                })
+            );
         } catch (Throwable t) {
             faulted = true;
             throw t;
