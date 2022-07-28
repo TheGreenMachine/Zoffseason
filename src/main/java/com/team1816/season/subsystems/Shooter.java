@@ -99,6 +99,11 @@ public class Shooter extends Subsystem implements PidProvider {
         return false;
     }
 
+    @Override
+    public PIDSlotConfiguration getPIDConfig() {
+        return null;
+    }
+
     public enum STATE {
         STOP,
         ONE,
