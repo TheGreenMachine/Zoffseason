@@ -1,5 +1,6 @@
 package com.team1816.season.subsystems;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.team1816.lib.hardware.components.motor.IGreenMotor;
 import com.team1816.lib.subsystems.Subsystem;
 
@@ -17,7 +18,7 @@ public class Folder extends Subsystem {
     private STATE desiredState = STATE.STOP;
 
     // Constants
-    private final double ONE;
+    private final double FOLDERVELOCITY;
     private final double TWO;
     private final double THREE;
     private final double FOUR;
@@ -43,6 +44,10 @@ public class Folder extends Subsystem {
         }
     }
 
+    public void setVelocity() {
+
+    }
+
     public double getActualOutput() {
         return actualOutput;
     }
@@ -62,19 +67,14 @@ public class Folder extends Subsystem {
             switch (desiredState) {
                 // add case statements
                 case STOP:
+                    folderMotor.set(ControlMode.PercentOutput, 0);
                     break;
-                case ONE:
-                    break;
-                case TWO:
-                    break;
-                case THREE:
-                    break;
-                case FOUR:
+                case RUNNING:
+                    folderMotor.set(ControlMode.PercentOutput, FOLDERVELOCITY);
                     break;
             }
         }
     }
-
     @Override
     public void stop() {
 
@@ -87,9 +87,6 @@ public class Folder extends Subsystem {
 
     public enum STATE {
         STOP,
-        ONE,
-        TWO,
-        THREE,
-        FOUR,
+        RUNNING,
     }
 }
