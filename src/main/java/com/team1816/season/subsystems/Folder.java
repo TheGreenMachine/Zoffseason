@@ -31,7 +31,7 @@ public class Folder extends Subsystem {
         this.folderMotor = factory.getMotor(NAME, "folderMotor");
 
         // Constants
-        ONE = factory.getConstant(NAME, "one", -1);
+        FOLDERVELOCITY = factory.getConstant(NAME, "foldervelocity", -1);
         TWO = factory.getConstant(NAME, "two", -1);
         THREE = factory.getConstant(NAME, "three", -1);
         FOUR = factory.getConstant(NAME, "four", -1);
