@@ -166,7 +166,10 @@ public class Robot extends TimedRobot {
             mAutoModeSelector.updateModeCreator();
 
             //
-            actionManager = new ActionManager();
+            actionManager = new ActionManager(
+                //dummy method getslowmode (change later)
+                createHoldAction(() -> mControlBoard.getSlowMode(), murdering -> mShooter.setFiring())
+            );
         } catch (Throwable t) {
             faulted = true;
             throw t;

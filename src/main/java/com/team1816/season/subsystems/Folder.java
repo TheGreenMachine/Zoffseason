@@ -44,6 +44,15 @@ public class Folder extends Subsystem {
         }
     }
 
+    private void lockToShooter() {
+        //fix later
+        if (robotState.shooterState == Shooter.STATE.REVVING) {
+            folderMotor.set(ControlMode.PercentOutput, FOLDERVELOCITY);
+        } else {
+            outputsChanged = true; // keep looping through writeToHardware if shooter not up to speed
+        }
+    }
+
     public void setVelocity() {
 
     }
@@ -70,7 +79,7 @@ public class Folder extends Subsystem {
                     folderMotor.set(ControlMode.PercentOutput, 0);
                     break;
                 case RUNNING:
-                    folderMotor.set(ControlMode.PercentOutput, FOLDERVELOCITY);
+                    lockToShooter();
                     break;
             }
         }
