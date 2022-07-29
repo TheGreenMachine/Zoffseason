@@ -19,7 +19,9 @@ import com.team1816.season.auto.AutoModeSelector;
 import com.team1816.season.auto.paths.TrajectorySet;
 import com.team1816.season.controlboard.ActionManager;
 import com.team1816.season.states.RobotState;
+import com.team1816.season.subsystems.Folder;
 import com.team1816.season.subsystems.Hood;
+import com.team1816.season.subsystems.Shooter;
 import com.team254.lib.util.LatchedBoolean;
 import com.team254.lib.util.SwerveDriveSignal;
 import edu.wpi.first.wpilibj.*;
@@ -44,11 +46,14 @@ public class Robot extends TimedRobot {
 
     //State managers
     private final Infrastructure mInfrastructure;
+    private final Superstructure mSuperstructure;
     private final com.team1816.season.states.RobotState mRobotState;
 
     // subsystems
     private final Drive mDrive;
     private final Hood mHood;
+    private final Folder mFolder;
+    private final Shooter mShooter;
 
     private final LatchedBoolean mWantsAutoExecution = new LatchedBoolean();
     private final LatchedBoolean mWantsAutoInterrupt = new LatchedBoolean();
@@ -71,7 +76,10 @@ public class Robot extends TimedRobot {
         injector = Guice.createInjector(new LibModule(), new SeasonModule());
         mDrive = (injector.getInstance(Drive.Factory.class)).getInstance();
         mHood = injector.getInstance(Hood.class);
+        mFolder = injector.getInstance(Folder.class);
+        mShooter = injector.getInstance(Shooter.class);
         mRobotState = injector.getInstance(RobotState.class);
+        mSuperstructure = injector.getInstance(Superstructure.class);
         mSubsystemManager = injector.getInstance(SubsystemManager.class);
         mAutoModeExecutor = injector.getInstance(AutoModeExecutor.class);
         mAutoModeSelector = injector.getInstance(AutoModeSelector.class);
@@ -170,15 +178,12 @@ public class Robot extends TimedRobot {
 
             //
             actionManager = new ActionManager(
-<<<<<<< HEAD
                 //dummy method getslowmode (change later)
-                createHoldAction(() -> mControlBoard.getSlowMode(), murdering -> mShooter.setFiring())
-=======
+                createHoldAction(() -> mControlBoard.getSlowMode(), murdering -> mSuperstructure.setFiring(murdering)),
                 createAction(
                     () -> mControlBoard.getBrakeMode(),
                     () -> mHood.setDesiredPosition(500)
                 )
->>>>>>> 553e06fbd6f677aebd11847304fd757d41b81dc9
             );
         } catch (Throwable t) {
             faulted = true;

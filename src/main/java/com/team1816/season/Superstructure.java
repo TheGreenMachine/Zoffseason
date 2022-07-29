@@ -1,6 +1,7 @@
 package com.team1816.season;
 
 import com.team1816.season.subsystems.Folder;
+import com.team1816.season.subsystems.Shooter;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -10,6 +11,9 @@ public class Superstructure {
 
     @Inject
     private static Folder folder;
+
+    @Inject
+    private static Shooter shooter;
 
     private boolean revving;
     private boolean firing;
@@ -21,7 +25,7 @@ public class Superstructure {
 
     public void setStopped() {
         folder.setDesiredState(Folder.STATE.STOP);
-        shooter.setDesiredState(shooter.STATE.STOP);
+        shooter.setDesiredState(Shooter.STATE.STOP);
 
         revving = false;
         firing = false;
@@ -33,11 +37,11 @@ public class Superstructure {
         System.out.println("struct - fire " + firing);
         if (firing) {
             folder.setDesiredState(Folder.STATE.RUNNING);
-            shooter.setDesiredState(shooter.STATE.FIRING);
+            shooter.setDesiredState(Shooter.STATE.FIRING);
         }
         else {
             folder.setDesiredState(Folder.STATE.STOP);
-            shooter.setDesiredState(shooter.STATE.STOP);
+            shooter.setDesiredState(Shooter.STATE.STOP);
         }
     }
 }
