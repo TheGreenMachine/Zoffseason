@@ -4,4 +4,6 @@ public interface IOperatorControlBoard {
     void reset();
 
     void setRumble(boolean on);
+
+    boolean dropFrisbee();
 }

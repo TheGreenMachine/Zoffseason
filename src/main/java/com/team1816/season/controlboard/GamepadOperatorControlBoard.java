@@ -27,5 +27,10 @@ public class GamepadOperatorControlBoard implements IOperatorControlBoard {
     }
 
     @Override
+    public boolean dropFrisbee() {
+        return mController.getButton(Controller.Button.A);
+    }
+
+    @Override
     public void reset() {}
 }

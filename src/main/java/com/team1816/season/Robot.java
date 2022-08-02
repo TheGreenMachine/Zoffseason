@@ -8,6 +8,7 @@ import com.google.inject.Injector;
 import com.team1816.lib.Infrastructure;
 import com.team1816.lib.LibModule;
 import com.team1816.lib.auto.AutoModeExecutor;
+import com.team1816.lib.auto.actions.LambdaAction;
 import com.team1816.lib.auto.modes.AutoModeBase;
 import com.team1816.lib.controlboard.IControlBoard;
 import com.team1816.lib.hardware.factory.RobotFactory;
@@ -19,6 +20,7 @@ import com.team1816.season.auto.AutoModeSelector;
 import com.team1816.season.auto.paths.TrajectorySet;
 import com.team1816.season.controlboard.ActionManager;
 import com.team1816.season.states.RobotState;
+import com.team1816.season.subsystems.Fingers;
 import com.team254.lib.util.LatchedBoolean;
 import com.team254.lib.util.SwerveDriveSignal;
 import edu.wpi.first.wpilibj.*;
@@ -47,6 +49,7 @@ public class Robot extends TimedRobot {
 
     // subsystems
     private final Drive mDrive;
+    private final Fingers mFingers;
 
     private final LatchedBoolean mWantsAutoExecution = new LatchedBoolean();
     private final LatchedBoolean mWantsAutoInterrupt = new LatchedBoolean();
@@ -68,6 +71,7 @@ public class Robot extends TimedRobot {
         // initialize injector
         injector = Guice.createInjector(new LibModule(), new SeasonModule());
         mDrive = (injector.getInstance(Drive.Factory.class)).getInstance();
+        mFingers = (injector.getInstance(Fingers.class));
         mRobotState = injector.getInstance(RobotState.class);
         mSubsystemManager = injector.getInstance(SubsystemManager.class);
         mAutoModeExecutor = injector.getInstance(AutoModeExecutor.class);
@@ -153,7 +157,7 @@ public class Robot extends TimedRobot {
 
             logger.finishInitialization();
 
-            mSubsystemManager.setSubsystems(mDrive);
+            mSubsystemManager.setSubsystems(mDrive, mFingers);
 
             mSubsystemManager.zeroSensors();
 
@@ -166,7 +170,8 @@ public class Robot extends TimedRobot {
             mAutoModeSelector.updateModeCreator();
 
             //
-            actionManager = new ActionManager();
+            actionManager = new ActionManager(
+                createAction(() -> mControlBoard.dropFrisbee(), () -> mFingers.incrementFingers())); // () -> boolean
         } catch (Throwable t) {
             faulted = true;
             throw t;
