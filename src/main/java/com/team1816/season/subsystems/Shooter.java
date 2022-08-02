@@ -1,9 +1,17 @@
 package com.team1816.season.subsystems;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
+import com.google.inject.Singleton;
 import com.team1816.lib.hardware.PIDSlotConfiguration;
 import com.team1816.lib.hardware.components.motor.IGreenMotor;
 import com.team1816.lib.subsystems.PidProvider;
 import com.team1816.lib.subsystems.Subsystem;
+import com.team1816.lib.util.EnhancedMotorChecker;
+import com.team1816.season.Constants;
+import edu.wpi.first.util.sendable.SendableBuilder;
+
 
 public class Shooter extends Subsystem implements PidProvider {
 
@@ -20,41 +28,39 @@ public class Shooter extends Subsystem implements PidProvider {
     // Constants
     private final PIDSlotConfiguration pidConfig;
 
-    private final double NEAR_VELOCITY = (int) factory.getConstant(NAME, "nearVel");
+    public static final double NEAR_VELOCITY = (int) factory.getConstant(NAME, "nearVel");
 
-    private final double MID_VELOCITY = (int) factory.getConstant(NAME, "midVel");
+    public static final double MID_VELOCITY = (int) factory.getConstant(NAME, "midVel");
 
-    private final double TARMAC_TAPE_VEL = (int) factory.getConstant(NAME,"tarmacTapeVel");
+    public static final double TARMAC_TAPE_VEL = (int) factory.getConstant(NAME,"tarmacTapeVel");
 
-    private final double LAUNCHPAD_VEL = (int) factory.getConstant(NAME,"maxVel");
+    public static final double LAUNCHPAD_VEL = (int) factory.getConstant(NAME,"maxVel");
 
-    private final double MAX_VELOCITY = (int) factory.getConstant(NAME, "maxVel");
+    public static final double MAX_VELOCITY = (int) factory.getConstant(NAME, "maxVel");
 
-    private final double COAST_VELOCITY = (int) factory.getConstant(NAME,"coastVel");
+    public static final double COAST_VELOCITY = (int) factory.getConstant(NAME,"coastVel");
 
     public final int VELOCITY_THRESHOLD;
 
 
-    public Shooter(String name) {
-        super(name);
+    public Shooter(double desiredOutput) {
+        super(NAME);
+        this.desiredOutput = desiredOutput;
+        shooterMotor = factory.getMotor(NAME, "shooterMotor");
+        shooterMotor.setNeutralMode(NeutralMode.Coast);
+        shooterMotor.configClosedloopRamp(0.5, Constants.kCANTimeoutMs);
+        shooterMotor.setSensorPhase(false);
+        configCurrentLimits(40/* amps */);
+
         pidConfig = factory.getPidSlotConfig(NAME);
         VELOCITY_THRESHOLD = pidConfig.allowableError.intValue();
-
-        // Components
-        this.shooterMotor = factory.getMotor(NAME, "shooterMotor");
-
-        // Constants
-        ONE = factory.getConstant(NAME, "one", -1);
-        TWO = factory.getConstant(NAME, "two", -1);
-        THREE = factory.getConstant(NAME, "three", -1);
-        FOUR = factory.getConstant(NAME, "four", -1);
     }
 
-    public void setDesiredState(STATE state) {
-        if (this.desiredState != state) {
-            this.desiredState = state;
-            outputsChanged = true;
-        }
+    private void configCurrentLimits(int currentLimitAmps) {
+        shooterMotor.configSupplyCurrentLimit(
+            new SupplyCurrentLimitConfiguration(true, currentLimitAmps,0,0),
+            Constants.kCANTimeoutMs
+        );
     }
 
     public double getActualOutput() {
@@ -65,8 +71,51 @@ public class Shooter extends Subsystem implements PidProvider {
     }
 
     @Override
+    public PIDSlotConfiguration getPidConfig() {return pidConfig; }
+
+    public double getactualOutput() {return actualOutput; }
+
+    public double getTargetOutput() {return desiredOutput; }
+
+    public double getError() {return Math.abs(actualOutput - desiredOutput); }
+
+    public void setOutput(double output) {
+        desiredOutput = output;
+        shooterMotor.set(ControlMode.Velocity,desiredOutput);
+    }
+
+    public void setDesiredState(STATE state) {
+        desiredState = state;
+        outputsChanged = true;
+        }
+
+    public boolean isOutputNearTarget() {
+        if (!isImplemented()) {
+            return true;
+        }
+        return (
+            Math.abs(desiredOutput - actualOutput) < VELOCITY_THRESHOLD &&
+                desiredState != STATE.COASTING
+            );
+    }
+
+
+
+    @Override
     public void readFromHardware() {
-//        add stuff
+         actualOutput = shooterMotor.getSelectedSensorVelocity(0);
+
+         robotState.shooterMPS = convertShooterTicksToMetersPerSecond(actualOutput);
+
+         if (desiredState != robotState.shooterSTATE) {
+             if (actualOutput < VELOCITY_THRESHOLD) {
+                 robotState.shooterSTATE = STATE.STOP;
+             } else if (isOutputNearTarget()) {
+                 robotState.shooterSTATE = STATE.REVVING;
+             } else {
+                 robotState.shooterSTATE = STATE.COASTING;
+             }
+         }
     }
 
     @Override
@@ -76,18 +125,27 @@ public class Shooter extends Subsystem implements PidProvider {
             switch (desiredState) {
                 // add case statements
                 case STOP:
+                    setOutput(0);
                     break;
-                case ONE:
+                case REVVING:
                     break;
-                case TWO:
-                    break;
-                case THREE:
-                    break;
-                case FOUR:
+                case COASTING:
+                    setOutput(COAST_VELOCITY);
                     break;
             }
         }
     }
+
+    public double convertShooterTicksToMetersPerSecond(double ticks) {
+        return 0.00019527 * ticks; //verify conversion?
+    }
+
+    public double convertShooterMetersToTicksPerSecond(double metersPerSecond) {
+        return (metersPerSecond + 0.53) / 0.0248;
+    }
+
+   @Override
+   public void initSendable(SendableBuilder builder) {}
 
     @Override
     public void stop() {
@@ -106,10 +164,9 @@ public class Shooter extends Subsystem implements PidProvider {
 
     public enum STATE {
         STOP,
-        ONE,
-        TWO,
-        THREE,
-        FOUR,
+        COASTING,
+        REVVING,
+        CAMERA,
     }
 }
 

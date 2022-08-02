@@ -2,6 +2,7 @@ package com.team1816.season.states;
 
 import com.google.inject.Singleton;
 import com.team1816.season.Constants;
+import com.team1816.season.subsystems.Shooter;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -17,8 +18,12 @@ public class RobotState {
     public Pose2d estimated_field_to_vehicle = Constants.EmptyPose;
     public ChassisSpeeds delta_vehicle = new ChassisSpeeds();
 
+    public double shooterMPS = 0; // addition from jimmy because needed for shooter class, (needs to be remapped - default value)
+
     // Superstructure ACTUAL states
     public Point visionPoint = new Point();
+
+    public Shooter.STATE shooterSTATE = Shooter.STATE.STOP;
 
     public RobotState() {
         SmartDashboard.putData("Field", field);

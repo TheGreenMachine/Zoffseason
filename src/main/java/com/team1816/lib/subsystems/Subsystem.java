@@ -2,6 +2,7 @@ package com.team1816.lib.subsystems;
 
 import badlog.lib.BadLog;
 import com.google.inject.Inject;
+import com.team1816.lib.hardware.PIDSlotConfiguration;
 import com.team1816.lib.hardware.factory.RobotFactory;
 import com.team1816.lib.loops.ILooper;
 import com.team1816.season.Robot;
@@ -35,6 +36,8 @@ public abstract class Subsystem implements Sendable {
     }
 
     public void writeToLog() {}
+
+    public abstract PIDSlotConfiguration getPidConfig();
 
     // Optional design pattern for caching periodic reads to avoid hammering the HAL/CAN.
     public void readFromHardware() {}
