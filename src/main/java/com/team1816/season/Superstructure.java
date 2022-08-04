@@ -9,10 +9,8 @@ import javax.inject.Singleton;
 @Singleton
 public class Superstructure {
 
-    @Inject
     private static Folder folder;
 
-    @Inject
     private static Shooter shooter;
 
     private boolean revving;
