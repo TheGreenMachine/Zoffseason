@@ -4,7 +4,7 @@ import com.team1816.lib.controlboard.Controller;
 import com.team1816.lib.controlboard.LogitechController;
 import com.team1816.lib.controlboard.WasdController;
 import com.team1816.lib.controlboard.XboxController;
-import com.team254.lib.util.LatchedBoolean;
+import com.team1816.lib.util.team254.LatchedBoolean;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotBase;
 import java.util.function.BooleanSupplier;
@@ -51,10 +51,10 @@ public class ControlUtils implements Controller.Factory {
 
     public static class PressAction implements ButtonAction {
 
-        private LatchedBoolean pressedState = new LatchedBoolean();
-        private LatchedBoolean releasedState = new LatchedBoolean();
-        private BooleanSupplier input;
-        private Runnable action;
+        private final LatchedBoolean pressedState = new LatchedBoolean();
+        private final LatchedBoolean releasedState = new LatchedBoolean();
+        private final BooleanSupplier input;
+        private final Runnable action;
 
         private PressAction(BooleanSupplier input, Runnable action) {
             this.input = input;

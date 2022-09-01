@@ -1,5 +1,5 @@
-# Zoffseason
-Zoffseason is FRC Team 1816's 2022 offseason training repositiory. This software uses Java 11, the [WPILib](https://github.com/wpilibsuite/allwpilib) library, and the [CTRE Phoenix](https://github.com/CrossTheRoadElec/Phoenix-api) library.
+# Zap
+Zap is FRC Team 1816's robot for the 2022 FRC season, *FIRST Rapid React*. This software uses Java 11, the [WPILib](https://github.com/wpilibsuite/allwpilib) library, and the [CTRE Phoenix](https://github.com/CrossTheRoadElec/Phoenix-api) library.
 
 ## Prerequisites
 1. You must have Java 11 installed on your system. You can [download OpenJDK 11 here](https://openjdk.java.net/projects/jdk/11/) or [download Oracle's JDK 11 here](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html). Alternatively, this will be installed through the WPILib One-Click Installer.
@@ -19,7 +19,7 @@ $ git clone https://github.com/TheGreenMachine/Zap.git
 
 1. Clone the project into your desired folder.
 2. Open IntelliJ IDEA to the welcome screen.
-3. **Do NOT select 'Open Project'**. Instead, select 'Get from VCS' or 'import project'.
+3. **Do NOT select 'Open Project'**. Instead, select 'Import Project'.
 4. Select `Import project from external model`. Then select 'Gradle'.
 5. Configure your Gradle options:
     * Make sure to select the "Use gradle 'wrapper' task configuration' option.

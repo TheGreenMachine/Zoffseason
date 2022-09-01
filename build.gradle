@@ -103,7 +103,7 @@ jar {
 }
 
 jsonSchema2Pojo {
-    targetPackage = 'com.team1816.lib.hardware'
+    targetPackage = 'com.team1816.lib'
     useTitleAsClassname = true
     includeGetters = false
     includeSetters = false
@@ -112,13 +112,9 @@ jsonSchema2Pojo {
     includeToString = true
     includeHashcodeAndEquals = false
     source.setFrom files(
-        "${project.rootDir}/src/main/resources/subsystemconfig.schema.json",
-        "${project.rootDir}/src/main/resources/pidconfig.schema.json",
-        "${project.rootDir}/src/main/resources/swervemoduleconfig.schema.json",
-        "${project.rootDir}/src/main/resources/moduleconfig.schema.json",
-        "${project.rootDir}/src/main/resources/double.solenoid.schema.json",
-        "${project.rootDir}/src/main/resources/robotconfig.schema.json"
-    )}
+        "${project.rootDir}/src/main/resources/schemas"
+    )
+}
 
 spotless {
     java {
@@ -136,7 +132,7 @@ spotless {
     }
 }
 
-task runRobot(type: JavaExec) {
+task runAlpha(type: JavaExec) {
     String jniDir = "${project.buildDir}/jni/release"
     environment "PATH", jniDir
     String hal = fileTree(dir: "${project.buildDir}/jni/release", include: '*halsim_*.*').asPath
@@ -147,6 +143,40 @@ task runRobot(type: JavaExec) {
     }
     environment "HALSIM_EXTENSIONS", hal
     environment "ROBOT_NAME", "alpha"
+    dependsOn(jar, simulateExternalJavaRelease)
+    classpath = files(jar)
+    jvmArgs "-Djava.library.path=${jniDir}"
+}
+
+task runSwerve(type: JavaExec) {
+    String jniDir = "${project.buildDir}/jni/release"
+    environment "PATH", jniDir
+    String hal = fileTree(dir: "${project.buildDir}/jni/release", include: '*halsim_*.*').asPath
+    if (!DefaultNativePlatform.currentOperatingSystem.isWindows()) {
+        environment "LD_LIBRARY_PATH", jniDir
+        environment "DYLD_FALLBACK_LIBRARY_PATH", jniDir
+        environment "DYLD_LIBRARY_PATH", jniDir
+        jvmArgs "-XstartOnFirstThread"
+    }
+    environment "HALSIM_EXTENSIONS", hal
+    environment "ROBOT_NAME", "zoffseason"
+    dependsOn(jar, simulateExternalJavaRelease)
+    classpath = files(jar)
+    jvmArgs "-Djava.library.path=${jniDir}"
+}
+
+task runTank(type: JavaExec) {
+    String jniDir = "${project.buildDir}/jni/release"
+    environment "PATH", jniDir
+    String hal = fileTree(dir: "${project.buildDir}/jni/release", include: '*halsim_*.*').asPath
+    if (!DefaultNativePlatform.currentOperatingSystem.isWindows()) {
+        environment "LD_LIBRARY_PATH", jniDir
+        environment "DYLD_FALLBACK_LIBRARY_PATH", jniDir
+        environment "DYLD_LIBRARY_PATH", jniDir
+        jvmArgs "-XstartOnFirstThread"
+    }
+    environment "HALSIM_EXTENSIONS", hal
+    environment "ROBOT_NAME", "zodiac_pro"
     dependsOn(jar, simulateExternalJavaRelease)
     classpath = files(jar)
     jvmArgs "-Djava.library.path=${jniDir}"

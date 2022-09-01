@@ -1,18 +1,16 @@
 package com.team1816.lib;
 
 import com.google.inject.AbstractModule;
-import com.team1816.lib.auto.actions.*;
-import com.team1816.lib.auto.modes.AutoModeBase;
 import com.team1816.lib.controlboard.*;
+import com.team1816.lib.subsystems.drive.Drive;
+import com.team1816.lib.subsystems.drive.DriveFactory;
 import com.team1816.season.controlboard.ControlUtils;
 
 public class LibModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(Drive.Factory.class).to(DriveFactory.class);
         bind(Controller.Factory.class).to(ControlUtils.class);
-        requestStaticInjection(TrajectoryAction.class);
-        requestStaticInjection(AutoModeBase.class);
-        requestStaticInjection(WaitUntilInsideRegion.class);
     }
 }

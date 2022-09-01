@@ -13,44 +13,50 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class RobotState {
 
     public final Field2d field = new Field2d();
-    public Pose2d field_to_vehicle = Constants.EmptyPose;
-    public Pose2d estimated_field_to_vehicle = Constants.EmptyPose;
-    public ChassisSpeeds delta_vehicle = new ChassisSpeeds();
+    public Pose2d fieldToVehicle = Constants.EmptyPose;
+    public Pose2d estimatedFieldToVehicle = Constants.EmptyPose;
+    public ChassisSpeeds deltaVehicle = new ChassisSpeeds();
 
     // Superstructure ACTUAL states
-    public Point visionPoint = new Point();
+
+    public boolean overheating = false;
 
     public RobotState() {
         SmartDashboard.putData("Field", field);
-        reset();
+        resetPosition();
     }
 
     /**
      * Resets the field to robot transform (robot's position on the field)
      */
-    public synchronized void reset(
+    public synchronized void resetPosition(
         Pose2d initial_field_to_vehicle,
         Rotation2d initial_vehicle_to_turret
     ) {
-        reset(initial_field_to_vehicle);
+        resetPosition(initial_field_to_vehicle);
     }
 
-    public synchronized void reset(Pose2d initial_field_to_vehicle) {
-        field_to_vehicle = initial_field_to_vehicle;
+    public synchronized void resetPosition(Pose2d initial_field_to_vehicle) {
+        fieldToVehicle = initial_field_to_vehicle;
     }
 
-    public synchronized void reset() {
-        reset(Constants.StartingPose);
+    public synchronized void resetPosition() {
+        resetPosition(Constants.kDefaultZeroingPose);
+    }
+
+    public synchronized void resetAllStates() {
+        deltaVehicle = new ChassisSpeeds();
+        overheating = false;
     }
 
     public synchronized Pose2d getLatestFieldToVehicle() {
         // CCW rotation increases degrees
-        return field_to_vehicle;
+        return fieldToVehicle;
     }
 
     public synchronized void outputToSmartDashboard() {
         //shuffleboard periodic updates should be here
-        field.setRobotPose(field_to_vehicle);
+        field.setRobotPose(fieldToVehicle);
     }
 
     // Camera state

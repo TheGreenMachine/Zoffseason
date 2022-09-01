@@ -1,83 +1,76 @@
 package com.team1816.season;
 
-import static com.team1816.season.controlboard.ControlUtils.*;
+import static com.team1816.lib.subsystems.drive.Drive.kPathFollowingMaxAccelMeters;
+import static com.team1816.lib.subsystems.drive.Drive.kPathFollowingMaxVelMeters;
+import static com.team1816.season.controlboard.ControlUtils.createHoldAction;
 
 import badlog.lib.BadLog;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.team1816.lib.Infrastructure;
-import com.team1816.lib.LibModule;
-import com.team1816.lib.auto.AutoModeExecutor;
-import com.team1816.lib.auto.modes.AutoModeBase;
+import com.team1816.lib.Injector;
+import com.team1816.lib.controlboard.ControlBoardBrige;
 import com.team1816.lib.controlboard.IControlBoard;
 import com.team1816.lib.hardware.factory.RobotFactory;
 import com.team1816.lib.loops.Looper;
-import com.team1816.lib.subsystems.Drive;
-import com.team1816.lib.subsystems.DrivetrainLogger;
 import com.team1816.lib.subsystems.SubsystemManager;
-import com.team1816.season.auto.AutoModeSelector;
-import com.team1816.season.auto.paths.TrajectorySet;
+import com.team1816.lib.subsystems.drive.Drive;
+import com.team1816.lib.subsystems.drive.DrivetrainLogger;
+import com.team1816.season.auto.AutoModeManager;
 import com.team1816.season.controlboard.ActionManager;
 import com.team1816.season.states.RobotState;
-import com.team254.lib.util.LatchedBoolean;
-import com.team254.lib.util.SwerveDriveSignal;
+import com.team1816.season.states.Superstructure;
 import edu.wpi.first.wpilibj.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Optional;
 
 public class Robot extends TimedRobot {
 
     private BadLog logger;
 
-    private final Injector injector;
+    private final Looper enabledLoop;
+    private final Looper disabledLoop;
 
-    private final Looper mEnabledLooper = new Looper(this);
-    private final Looper mDisabledLooper = new Looper(this);
-
-    private IControlBoard mControlBoard;
-
-    private final SubsystemManager mSubsystemManager;
-
-    //State managers
-    private final Infrastructure mInfrastructure;
-    private final com.team1816.season.states.RobotState mRobotState;
-
-    // subsystems
-    private final Drive mDrive;
-
-    private final LatchedBoolean mWantsAutoExecution = new LatchedBoolean();
-    private final LatchedBoolean mWantsAutoInterrupt = new LatchedBoolean();
-
-    private final AutoModeSelector mAutoModeSelector;
-    private final AutoModeExecutor mAutoModeExecutor;
-    private TrajectorySet trajectorySet;
-
-    private double loopStart;
-
+    // controls
+    private IControlBoard controlBoard;
     private ActionManager actionManager;
 
-    private boolean faulted = false;
+    private final Infrastructure infrastructure;
+    private final SubsystemManager subsystemManager;
 
-    // private PowerDistributionPanel pdp = new PowerDistributionPanel();
+    //State managers
+    private final Superstructure superstructure;
+    private final RobotState robotState;
+
+    // subsystems
+    private final Drive drive;
+
+    private static RobotFactory factory;
+
+    // autonomous
+    private final AutoModeManager autoModeManager;
+
+    // timing
+    private double loopStart;
+    private boolean faulted = false;
 
     Robot() {
         super();
         // initialize injector
-        injector = Guice.createInjector(new LibModule(), new SeasonModule());
-        mDrive = (injector.getInstance(Drive.Factory.class)).getInstance();
-        mRobotState = injector.getInstance(RobotState.class);
-        mSubsystemManager = injector.getInstance(SubsystemManager.class);
-        mAutoModeExecutor = injector.getInstance(AutoModeExecutor.class);
-        mAutoModeSelector = injector.getInstance(AutoModeSelector.class);
-        mInfrastructure = injector.getInstance(Infrastructure.class);
-        trajectorySet = injector.getInstance(TrajectorySet.class);
+        Injector.registerModule(new SeasonModule());
+        enabledLoop = new Looper(this);
+        disabledLoop = new Looper(this);
+        drive = (Injector.get(Drive.Factory.class)).getInstance(); //TODO: need to fix this get drive instance should just return the proper one
+        superstructure = Injector.get(Superstructure.class);
+        infrastructure = Injector.get(Infrastructure.class);
+        robotState = Injector.get(RobotState.class);
+        subsystemManager = Injector.get(SubsystemManager.class);
+        autoModeManager = Injector.get(AutoModeManager.class);
     }
 
     public static RobotFactory getFactory() {
-        return RobotFactory.getInstance();
+        if (factory == null) factory = Injector.get(RobotFactory.class);
+        return factory;
     }
 
     private Double getLastLoop() {
@@ -87,14 +80,14 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         try {
-            mControlBoard = injector.getInstance(IControlBoard.class);
+            controlBoard = Injector.get(IControlBoard.class);
             DriverStation.silenceJoystickConnectionWarning(true);
             if (Constants.kIsBadlogEnabled) {
                 var logFile = new SimpleDateFormat("MMdd_HH-mm").format(new Date());
                 var robotName = System.getenv("ROBOT_NAME");
                 if (robotName == null) robotName = "default";
                 var logFileDir = "/home/lvuser/";
-                // if there is a usb drive use it
+                // if there is a USB drive use it
                 if (Files.exists(Path.of("/media/sda1"))) {
                     logFileDir = "/media/sda1/";
                 }
@@ -110,17 +103,17 @@ public class Robot extends TimedRobot {
 
                 BadLog.createValue(
                     "Max Velocity",
-                    String.valueOf(Constants.kPathFollowingMaxVelMeters)
+                    String.valueOf(kPathFollowingMaxVelMeters)
                 );
                 BadLog.createValue(
                     "Max Acceleration",
-                    String.valueOf(Constants.kPathFollowingMaxAccelMeters)
+                    String.valueOf(kPathFollowingMaxAccelMeters)
                 );
 
                 BadLog.createTopic(
                     "Timings/Looper",
                     "ms",
-                    mEnabledLooper::getLastLoop,
+                    enabledLoop::getLastLoop,
                     "hide",
                     "join:Timings"
                 );
@@ -139,34 +132,36 @@ public class Robot extends TimedRobot {
                     "hide"
                 );
 
-                DrivetrainLogger.init(mDrive);
+                DrivetrainLogger.init(drive);
                 if (RobotBase.isReal()) {
                     BadLog.createTopic(
                         "PDP/Current",
                         "Amps",
-                        mInfrastructure.getPdh()::getTotalCurrent
+                        infrastructure.getPd()::getTotalCurrent
                     );
 
-                    mDrive.CreateBadLogValue("Drivetrain PID", mDrive.pidToString());
+                    drive.CreateBadLogValue("Drivetrain PID", drive.pidToString());
                 }
+
+                logger.finishInitialization();
             }
 
-            logger.finishInitialization();
+            subsystemManager.setSubsystems(drive);
+            subsystemManager.registerEnabledLoops(enabledLoop);
+            subsystemManager.registerDisabledLoops(disabledLoop);
+            subsystemManager.zeroSensors();
 
-            mSubsystemManager.setSubsystems(mDrive);
-
-            mSubsystemManager.zeroSensors();
-
-            mSubsystemManager.registerEnabledLoops(mEnabledLooper);
-            mSubsystemManager.registerDisabledLoops(mDisabledLooper);
-
-            // Robot starts forwards.
-            mRobotState.reset();
-
-            mAutoModeSelector.updateModeCreator();
-
-            //
-            actionManager = new ActionManager();
+            actionManager =
+                new ActionManager(
+                    createHoldAction(
+                        () -> controlBoard.getAsBool("brakeMode"),
+                        drive::setBraking
+                    ),
+                    createHoldAction(
+                        () -> controlBoard.getAsBool("slowMode"),
+                        drive::setSlowMode
+                    )
+                );
         } catch (Throwable t) {
             faulted = true;
             throw t;
@@ -176,18 +171,22 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledInit() {
         try {
-            mEnabledLooper.stop();
+            enabledLoop.stop();
 
-            // Reset all auto mode states.
-            if (mAutoModeExecutor != null) {
-                mAutoModeExecutor.stop();
+            // Stop any running autos
+            autoModeManager.stopAuto();
+
+            if (autoModeManager.getSelectedAuto() == null) {
+                autoModeManager.reset();
             }
-            mAutoModeSelector.updateModeCreator();
 
-            mDisabledLooper.start();
+            superstructure.setStopped();
+            subsystemManager.stop();
 
-            mDrive.stop();
-            mDrive.setBrakeMode(false);
+            robotState.resetAllStates();
+            drive.zeroSensors();
+
+            disabledLoop.start();
         } catch (Throwable t) {
             faulted = true;
             throw t;
@@ -196,37 +195,27 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        try {
-            mDisabledLooper.stop();
+        disabledLoop.stop();
 
-            // Robot starts at first waypoint (Pose2D) of current auto path chosen
-            mRobotState.reset();
+        drive.zeroSensors(autoModeManager.getSelectedAuto().getInitialPose());
+        superstructure.setStopped();
 
-            mDrive.zeroSensors();
+        drive.setControlState(Drive.ControlState.TRAJECTORY_FOLLOWING);
+        autoModeManager.startAuto();
 
-            mDrive.setControlState(Drive.DriveControlState.TRAJECTORY_FOLLOWING);
-            mAutoModeExecutor.start();
-
-            mEnabledLooper.start();
-        } catch (Throwable t) {
-            throw t;
-        }
+        enabledLoop.start();
     }
 
     @Override
     public void teleopInit() {
         try {
-            mDisabledLooper.stop();
+            disabledLoop.stop();
 
-            if (mAutoModeExecutor != null) {
-                mAutoModeExecutor.stop();
-            }
+            superstructure.setStopped();
 
-            mDrive.stop();
+            infrastructure.startCompressor();
 
-            mEnabledLooper.start();
-
-            mInfrastructure.startCompressor();
+            enabledLoop.start();
         } catch (Throwable t) {
             faulted = true;
             throw t;
@@ -234,33 +223,21 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void testInit() {
-        try {
-            double initTime = System.currentTimeMillis();
-
-            mEnabledLooper.stop();
-            mDisabledLooper.start();
-            mDrive.zeroSensors();
-
-            if (mSubsystemManager.checkSubsystems()) {
-                System.out.println("ALL SYSTEMS PASSED");
-            } else {
-                System.err.println("CHECK ABOVE OUTPUT SOME SYSTEMS FAILED!!!");
-            }
-        } catch (Throwable t) {
-            faulted = true;
-            throw t;
-        }
-    }
+    public void testInit() {}
 
     @Override
     public void robotPeriodic() {
         try {
             // update shuffleboard for subsystem values
-            mSubsystemManager.outputToSmartDashboard();
+            subsystemManager.outputToSmartDashboard();
             // update robot state on field for Field2D widget
-            mRobotState.outputToSmartDashboard();
-            mAutoModeSelector.outputToSmartDashboard();
+            robotState.outputToSmartDashboard();
+            // update shuffleboard selected auto mode
+            autoModeManager.outputToSmartDashboard();
+
+            if (ControlBoardBrige.getInstance().isDemoMode()) { //todo: should be using injector
+                controlBoard.outputToSmartDashboard();
+            }
         } catch (Throwable t) {
             faulted = true;
             System.out.println(t.getMessage());
@@ -271,22 +248,19 @@ public class Robot extends TimedRobot {
     public void disabledPeriodic() {
         loopStart = Timer.getFPGATimestamp();
         try {
-            if (RobotController.getUserButton()) {
-                mDrive.zeroSensors(Constants.ZeroPose);
+            // Periodically check if drivers changed desired auto - if yes, then update the robot's position on the field
+            if (autoModeManager.update()) {
+                drive.zeroSensors(autoModeManager.getSelectedAuto().getInitialPose());
+                robotState.field
+                    .getObject("Trajectory")
+                    .setTrajectory(
+                        autoModeManager.getSelectedAuto().getCurrentTrajectory()
+                    );
             }
 
-            // Periodically check if drivers changed desired auto - if yes, then update the actual auto mode
-            mAutoModeSelector.updateModeCreator();
-
-            Optional<AutoModeBase> autoMode = mAutoModeSelector.getAutoMode();
-            if (
-                autoMode.isPresent() && autoMode.get() != mAutoModeExecutor.getAutoMode()
-            ) {
-                var auto = autoMode.get();
-                System.out.println("Set auto mode to: " + auto.getClass().toString());
-                mRobotState.field.getObject("Trajectory");
-                mAutoModeExecutor.setAutoMode(auto);
-                Constants.StartingPose = auto.getTrajectory().getInitialPose();
+            // check if demo mode speed multiplier changed
+            if (ControlBoardBrige.getInstance().isDemoMode()) { //todo: should be using injector
+                controlBoard.update();
             }
         } catch (Throwable t) {
             faulted = true;
@@ -297,6 +271,10 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         loopStart = Timer.getFPGATimestamp();
+        robotState.field
+            .getObject("Trajectory")
+            .setTrajectory(autoModeManager.getSelectedAuto().getCurrentTrajectory());
+
         if (Constants.kIsLoggingAutonomous) {
             logger.updateTopics();
             logger.log();
@@ -323,18 +301,11 @@ public class Robot extends TimedRobot {
         // update what's currently being imputed from both driver and operator controllers
         actionManager.update();
 
-        // If brake button is held, disable drivetrain joystick controls
-        if (mControlBoard.getBrakeMode()) {
-            mDrive.setOpenLoop(SwerveDriveSignal.BRAKE);
-        } else {
-            mDrive.setTeleopInputs(
-                mControlBoard.getThrottle(),
-                mControlBoard.getStrafe(),
-                mControlBoard.getTurn(),
-                mControlBoard.getSlowMode(),
-                false
-            );
-        }
+        drive.setTeleopInputs(
+            -controlBoard.getAsDouble("throttle"),
+            -controlBoard.getAsDouble("strafe"),
+            controlBoard.getAsDouble("rotation")
+        );
     }
 
     @Override
